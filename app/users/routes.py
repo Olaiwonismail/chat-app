@@ -1,6 +1,6 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flask_login import login_user, current_user, logout_user, login_required
-from app import db, bcrypt,bootstrap
+from app import db, bcrypt
 
 from app.models import User#, Post
 from app.users.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
@@ -29,9 +29,9 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
     form = LoginForm()
-    print('hiiii')
+    # print('hiiii')
     if form.validate_on_submit():
-        print('nnnnnnnnnnnnn')
+        # print('nnnnnnnnnnnnn')
         user = User.query.filter_by(email = form.email.data).first()
         if user and bcrypt.check_password_hash(user.password,form.password.data):
             login_user(user,remember = form.remember.data)
@@ -40,7 +40,7 @@ def login():
         else:
             flash('Login Unsuccessful',category='danger')
 
-    print('dddddddddd')
+    # print('dddddddddd')
     return render_template('users/login.html', title = 'Login',form = form)
 
 @users.route('/logout')
@@ -48,41 +48,41 @@ def logout():
     logout_user()
     return redirect(url_for('users.login'))
 
-@users.route('/account',methods = ['POST','GET'])
-@login_required
-def account():
-    form = UpdateAccountForm()
-    if form.picture.data:
-        print(current_user.image_file)
-        picture_file = save_pic(form.picture.data)
-        current_user.image_file = picture_file
-    if form.validate_on_submit():
-        current_user.firstname = form.firstname.data
-        current_user.lastname = form.lastname.data
-        current_user.email = form.email.data
-        db.session.commit()
-        flash('your account has been updated')
-        return redirect(url_for('users.account'))
-    elif request.method == 'GET':
-        form.firstname.data = current_user.firstname
-        form.lastname.data = current_user.lastname
-        form.email.data = current_user.email
-    image_file = url_for('static',filename='profile_pics/' + current_user.image_file)
-    print(image_file)
-    return render_template('users/account.html',title='Account',
-                                        image_file = image_file,form = form)
-
-@users.route("/user/<username>")
+# @users.route('/account',methods = ['POST','GET'])
 # @login_required
-def user_posts(username):
-    page = request.args.get('page',1,type = int)
-    user = User.query.filter_by(username=username).first_or_404()
-    # posts = Post.query.paginate(page=page ,per_page = 10)
-    posts = Post.query.filter_by(author=user)\
-        .order_by(Post.date_posted.desc())\
-        .paginate(page=page ,per_page = 3)
+# def account():
+#     form = UpdateAccountForm()
+#     if form.picture.data:
+#         print(current_user.image_file)
+#         picture_file = save_pic(form.picture.data)
+#         current_user.image_file = picture_file
+#     if form.validate_on_submit():
+#         current_user.firstname = form.firstname.data
+#         current_user.lastname = form.lastname.data
+#         current_user.email = form.email.data
+#         db.session.commit()
+#         flash('your account has been updated')
+#         return redirect(url_for('users.account'))
+#     elif request.method == 'GET':
+#         form.firstname.data = current_user.firstname
+#         form.lastname.data = current_user.lastname
+#         form.email.data = current_user.email
+#     image_file = url_for('static',filename='profile_pics/' + current_user.image_file)
+#     print(image_file)
+#     return render_template('users/account.html',title='Account',
+#                                         image_file = image_file,form = form)
 
-    return render_template('user_posts.html',posts=posts,user=user)
+# @users.route("/user/<username>")
+# # @login_required
+# def user_posts(username):
+#     page = request.args.get('page',1,type = int)
+#     user = User.query.filter_by(username=username).first_or_404()
+#     # posts = Post.query.paginate(page=page ,per_page = 10)
+#     posts = Post.query.filter_by(author=user)\
+#         .order_by(Post.date_posted.desc())\
+#         .paginate(page=page ,per_page = 3)
+
+#     return render_template('user_posts.html',posts=posts,user=user)
 
 #
 #

@@ -1,22 +1,100 @@
-from flask import render_template, request, Blueprint
-from app.models import Product
-from app import db,bootstrap
+from flask import render_template, request, Blueprint,session,redirect,url_for
+import random
+from string import ascii_letters
+from flask_socketio import SocketIO, join_room, leave_room, send
+
+from app import socketio,db
 from flask_login import login_required
 main = Blueprint('main',__name__)
 
+rooms = {}
 
-@main.route('/')
-@main.route('/home')
-# @login_required
+
+def generate_room_code(length: int, existing_codes: list[str]) -> str:
+    while True:
+        code_chars = [random.choice(ascii_letters) for _ in range(length)]
+        code = ''.join(code_chars)
+        if code not in existing_codes:
+            return code
+@main.route('/', methods=["GET", "POST"])
 def home():
-    # products = Product.query.all()
+    session.clear()
+    if request.method == "POST":
+        name = request.form.get('name')
+        create = request.form.get('create', False)
+        code = request.form.get('code')
+        join = request.form.get('join', False)
+        if not name:
+            return render_template('home.html', error="Name is required", code=code)
+        if create != False:
+            room_code = generate_room_code(6, list(rooms.keys()))
+            new_room = {
+                'members': 0,
+                'messages': []
+            }
+            rooms[room_code] = new_room
+        if join != False:
+            # no code
+            if not code:
+                return render_template('home.html', error="Please enter a room code to enter a chat room", name=name)
+            # invalid code
+            if code not in rooms:
+                return render_template('home.html', error="Room code invalid", name=name)
+            room_code = code
+        session['room'] = room_code
+        session['name'] = name
+        return redirect(url_for('main.room'))
+    else:
+        return render_template('home.html')        
+    
 
-    page = request.args.get('page',1,type = int)
-    # posts = Post.query.paginate(page=page ,per_page = 10)
-    products = Product.query.paginate(page=page ,per_page = 12)
+@main.route('/room')
+def room():
+    room = session.get('room')
+    name = session.get('name')
+    if name is None or room is None or room not in rooms:
+        return redirect(url_for('main.home'))
+    messages = rooms[room]['messages']
+    return render_template('room.html', room=room, user=name, messages=messages)
 
-    return render_template('main/home.html',products=products)
+@socketio.on('connect')
+def handle_connect():
+    name = session.get('name')
+    room = session.get('room')
+    if name is None or room is None:
+        return
+    if room not in rooms:
+        leave_room(room)
+    join_room(room)
+    send({
+        "sender": "",
+        "message": f"{name} has entered the chat"
+    }, to=room)
+    rooms[room]["members"] += 1
 
-@main.route('/about')
-def about():
-    return render_template('about.html', title = 'About')
+@socketio.on('message')
+def handle_message(payload):
+    room = session.get('room')
+    name = session.get('name')
+    if room not in rooms:
+        return
+    message = {
+        "sender": name,
+        "message": payload["message"]
+    }
+    send(message, to=room)
+    rooms[room]["messages"].append(message)
+    
+@socketio.on('disconnect')
+def handle_disconnect():
+    room = session.get("room")
+    name = session.get("name")
+    leave_room(room)
+    if room in rooms:
+        rooms[room]["members"] -= 1
+        if rooms[room]["members"] <= 0:
+            del rooms[room]
+        send({
+        "message": f"{name} has left the chat",
+        "sender": ""
+    }, to=room)

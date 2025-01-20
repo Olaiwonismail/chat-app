@@ -3,48 +3,37 @@ from app import db,login_manager
 from flask_login import UserMixin
 from flask import url_for, current_app
 # from itsdangerous import URLSafeTimedSerializer as Serializer
-
+from sqlalchemy import Column,Text,ForeignKey,DateTime,Boolean
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
+
+# User Model
 class User(db.Model,UserMixin):
-    id = db.Column(db.Integer,primary_key = True)
-    firstname = db.Column(db.String(20),unique=True,nullable=False)
-    lastname = db.Column(db.String(20),nullable=False)
-    email = db.Column(db.String(120),unique=True,nullable=False)
-    image_file = db.Column(db.String(20),nullable=False,default = 'image.png')
-    password = db.Column(db.String(50),nullable=False)
-    wishlist = db.Column(db.String(200),nullable=True)
-    # posts = db.relationship('Post',backref = 'author',lazy =True)
+    tablename = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.Text, unique=True, nullable=False)
+    email = db.Column(db.Text, unique=True, nullable=False)
+    password = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    def repr(self):
+        return f"<User(username={self.username})>"
 
+# Message Model
+class Message(db.Model):
+    tablename = 'messages'
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False)  # db.Boolean for read status
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def __repr__(self):
-        return f' User {self.username} ,{self.email} ,{self.image_file}'
+    
 
-class Product(db.Model):
-    id = db.Column(db.Integer,primary_key = True)
-    title = db.Column(db.String(40),nullable=False)
-    description = db.Column(db.String(140),nullable=False)
-    price = db.Column(db.Integer,nullable=False)
-    image = db.Column(db.String(100),nullable=False)
-    thumbnail = db.Column(db.String(100),nullable=False)
-    stock = db.Column(db.Integer,nullable=False)
-    brand = db.Column(db.String(20),nullable=True)
-    ratings = db.Column(db.Integer,nullable=False)
-    # buyer = db.Column(db.Integer,nullable = True)
-    # date_bought = db.Column(db.DateTime,nullable = True  )
-    category = db.Column(db.String(40),nullable=False)
-    tags = db.Column(db.String(100),nullable=False)
-    returnPolicy = db.Column(db.String(100),nullable=False)
-    shippingInformation = db.Column(db.String(100),nullable=False)
-    reviews = db.Column(db.String(400))
-
-    # reviews
-    # date_posted = db.Column(db.DateTime,nullable = False ,default =datetime.utcnow )
-#     content = db.Column(db.Text,nullable=False)
-#     user_id = db.Column(db.Integer,db.ForeignKey('user.id'),nullable=False)
-#
-    # def __repr__(self):
-    #     return f' User {self.title} ,{self.date_posted}'
+    def repr(self):
+        return f"<Message(sender_id={self.sender_id}, receiver_id={self.receiver_id})>"
+    
