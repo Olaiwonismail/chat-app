@@ -1,3 +1,4 @@
+{% extends 'base.html' %} {% block content %}
 {% for request in pending_requests %}
     <div>
         <p>{{ request.sender.username }} has sent you a friend request.</p>
@@ -9,3 +10,19 @@
         </form>
     </div>
 {% endfor %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-4">
+                    {% for category, message in messages %}
+                        <div class="text-white p-3 rounded-lg 
+                            {% if category == 'success' %} bg-green-500 
+                            {% elif category == 'danger' %} bg-red-500 
+                            {% else %} bg-yellow-500 {% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% endblock %}

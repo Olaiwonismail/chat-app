@@ -1,10 +1,12 @@
 {% extends 'base.html' %} {% block content %}
 <body class="bg-gray-100">
-  <h2 id="room-code-display">Room Code: <span>{{room}}</span>{{user}}</h2>
+  <!-- <h2 id="room-code-display">Room Code: <span>{{room}}</span>{{user}}</h2> -->
   <script type="text/javascript">
       var socketio = io.connect();
       socketio.on("message", 
       function (message) {
+        console.log('received');
+        
          createChatItem(message.message, message.sender) 
         });
       function createChatItem(message, sender) {
@@ -47,48 +49,112 @@
     
   <div class="flex h-screen">
       <!-- Sidebar -->
-      <div class="w-full sm:w-64 bg-white border-r border-gray-200 flex flex-col">
-          <!-- Search bar -->
-          <div class="p-4">
-              <input type="text" placeholder="Search friends..." class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <!-- Friend list -->
-          <div class="flex-1 overflow-y-auto">
-            {% for chat in chats%}
-              <div class="p-4 hover:bg-gray-100 cursor-pointer">
-                {% if current_user.id == chat.member_1 %}
-                  <h3 class="font-semibold">{{chat.member_2}} </h3>
-                {% else %}
-                <h3 class="font-semibold">{{chat.member_1}} </h3>
-                {% endif %} 
-                  <p class="text-sm text-gray-500">Last message...</p>
-              </div>
-              {% endfor %}  
-              <!-- <div class="p-4 hover:bg-gray-100 cursor-pointer">
-                  <h3 class="font-semibold">Jane Smith</h3>
-                  <p class="text-sm text-gray-500">Last message...</p>
-              </div>
-              <div class="p-4 hover:bg-gray-100 cursor-pointer">
-                  <h3 class="font-semibold">Bob Johnson</h3>
-                  <p class="text-sm text-gray-500">Last message...</p>
-              </div> -->
-              <!-- Add more friend items here -->
-          </div>
-      </div>
+      <div class="w-full sm:w-64 bg-white border-r border-gray-200 flex flex-col h-full">
+        <!-- Search bar -->
+        <div class="p-4 border-b border-gray-200">
+            <div class="relative">
+                <input type="text" placeholder="Search friends..." 
+                       class="w-full px-3 py-2 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <svg class="w-5 h-5 absolute left-3 top-2.5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+        </div>
+    
+        <!-- Friend list -->
+        <div class="flex-1 overflow-y-auto">
+            {% for chat in chats %}
+            <a href="{{url_for('main.room',room_id = chat.room_code)}}" 
+               class="block hover:bg-gray-50 transition duration-150">
+                <div class="p-4 border-b border-gray-100">
+                    {% if current_user.id == chat.member_1 %}
+                        <h3 class="font-semibold text-gray-900">{{chat.user_2.username}}</h3>
+                    {% else %}
+                        <h3 class="font-semibold text-gray-900">{{chat.user_1.username}}</h3>
+                    {% endif %}
+                    <p class="text-sm text-gray-500 mt-1">Last message...</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    
+        <!-- User profile section -->
+        <div class="mt-auto border-t border-gray-200">
+            <div class="p-4 flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                    {{ user[:1].upper() }}
+                </div>
+                <div class="flex-1">
+                    <p class="font-medium text-gray-900">{{user}}</p>
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                        <span class="text-sm text-gray-500">Online</span>
+                    </div>
+                </div>
+               <!-- Settings/Logout dropdown trigger -->
+<div class="relative">
+  <button onclick="toggleDropup()" class="p-2 hover:bg-gray-100 rounded-full">
+      <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+      </svg>
+  </button>
+  
+  <!-- Dropup Menu -->
+  <div id="dropupMenu" class="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 hidden">
+      <ul class="py-1">
+          <li>
+              <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+                  <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Profile
+              </a>
+          </li>
+          <li>
+              <a href="/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center">
+                  <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Logout
+              </a>
+          </li>
+      </ul>
+  </div>
+</div>
 
+<!-- Add this JavaScript code -->
+<script>
+  function toggleDropup() {
+      const dropup = document.getElementById('dropupMenu');
+      dropup.classList.toggle('hidden');
+      
+      // Close dropup when clicking outside
+      document.addEventListener('click', function(event) {
+          const dropup = document.getElementById('dropupMenu');
+          const button = event.target.closest('button');
+          
+          if (!button && !dropup.contains(event.target)) {
+              dropup.classList.add('hidden');
+          }
+      });
+  }
+</script>
+            </div>
+        </div>
+    </div>
       <!-- Main chat area -->
       <div class="flex-1 flex flex-col">
           <!-- Chat header -->
           <div class="bg-white border-b border-gray-200 p-4">
-              <h2 class="text-xl font-semibold">Chat with John Doe</h2>
+              <h2 class="text-xl font-semibold">Chat with {{receiver_id}}</h2>
           </div>
           <!-- Message list -->
           <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-4">
-              {% for message in messages %}
+              <!-- {% for message in messages %}
                   <script type="text/javascript">
                       createChatItem("{{message.message}}", "{{message.sender}}");
                   </script>
-                  {% endfor %} 
+                  {% endfor %}  -->
               <!-- Add more messages here-->
           </div>
           <!-- Message input -->

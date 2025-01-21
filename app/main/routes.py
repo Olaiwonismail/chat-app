@@ -4,7 +4,7 @@ from flask_login import login_user, current_user, logout_user, login_required
 from string import ascii_letters
 from flask_socketio import SocketIO, join_room, leave_room, send
 from app import db
-from app.models import FriendRequest, User,Room
+from app.models import FriendRequest, User,Room,Message
 from app import socketio,db
 from sqlalchemy.orm import aliased
 from sqlalchemy import or_
@@ -17,7 +17,7 @@ main = Blueprint('main',__name__)
 #         Room.member_2 == current_user.id
 #     )
 #     ).all()
-rooms = {}
+messages = []
 
 def generate_room_code(length: int, existing_codes: list[str]) -> str:
     while True:
@@ -32,58 +32,76 @@ def home():
 
 @main.route('/room')
 @login_required
-
 def room():
+    room_code = request.args.get('room_id')
+    session['room_code'] = room_code
     chats = Room.query.filter(
-    or_(
-        Room.member_1 == current_user.id,
-        Room.member_2 == current_user.id
-    )
+        or_(
+            Room.member_1 == current_user.id,
+            Room.member_2 == current_user.id
+        )
     ).all()
     name = current_user.username
-    messages=''
-  
-    print(chats)
-    return render_template('room.html', room=room, user=name, messages=messages,chats = chats)
+
+    # Get the current room by room_code (edit the logic as needed)
+    room = Room.query.filter_by(room_code=room_code).first()
+    
+    # Get messages for this room (edit as needed)
+    messages = Message.query.filter_by(room_id=room_code).all()
+
+    return render_template('room.html', room=room, user=name, messages=messages, chats=chats)
 
 @socketio.on('connect')
 @login_required
 def handle_connect():
     name = current_user.username
-    room = session.get('room')
-    if name is None or room is None:
-        return
-    if room not in rooms:
-        leave_room(room)
-    join_room(room)
-    send({
-        "sender": "",
-        "message": f"{name} has entered the chat"
-    }, to=room)
+    room = request.args.get('room_id')
+    
+    # if room not in rooms:
+    #     leave_room(room)
+    join_room('d416b909-befa-434a-9aa8-86f6d67d9787')
+    # send({
+    #     "sender": "",
+    #     "message": f"{name} has entered the chat"
+    # }, to=room)
 
 @socketio.on('message')
 def handle_message(payload):
-    room = session.get('room')
-    name = session.get('name')
-    if room not in rooms:
-        return
+    print('hiii')
+    name = current_user.username
+    room_code = 'd416b909-befa-434a-9aa8-86f6d67d9787'
+    room = Room.query.filter_by(room_code=room_code).first()
+    # print(room_code)
+    if current_user.id == room.member_1:
+        receiver_id=room.user_2.username
+    else: 
+        receiver_id=room.user_1.username
+    print(receiver_id)              
+    # if room not in rooms:
+    #     return
     message = {
-        "sender": name,
+        "sender": current_user.username,
         "message": payload["message"]
     }
-    send(message, to=room)
-    rooms[room]["messages"].append(message)
     
+    messages.append(message)
+    new_message = Message(sender_id =  current_user.id, receiver_id=receiver_id,message= payload["message"],room_id= room_code)
+    db.session.add(new_message)  
+    print(new_message.receiver_id) 
+    db.session.commit()
+    send(message, to=room_code)
+
+
 @socketio.on('disconnect')
 def handle_disconnect():
     room = session.get("room")
     name = session.get("name")
     leave_room(room)
-    if room in rooms:
-        rooms[room]["members"] -= 1
-        if rooms[room]["members"] <= 0:
-            del rooms[room]
-        send({
-        "message": f"{name} has left the chat",
-        "sender": ""
-    }, to=room)
+    # if room in rooms:
+    #     rooms[room]["members"] -= 1
+    #     if rooms[room]["members"] <= 0:
+    #         del rooms[room]
+    #     send({
+    #     "message": f"{name} has left the chat",
+    #     "sender": ""
+    # }, to=room)
