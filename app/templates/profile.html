@@ -1,0 +1,11 @@
+{% for request in pending_requests %}
+    <div>
+        <p>{{ request.sender.username }} has sent you a friend request.</p>
+        <form action="{{ url_for('requests.accept_friend_request', request_id=request.id) }}" method="POST">
+            <button type="submit" class="btn btn-success">Accept</button>
+        </form>
+        <form action="{{ url_for('requests.reject_friend_request', request_id=request.id) }}" method="POST">
+            <button type="submit" class="btn btn-danger">Reject</button>
+        </form>
+    </div>
+{% endfor %}

@@ -1,14 +1,23 @@
 from flask import render_template, request, Blueprint,session,redirect,url_for
 import random
+from flask_login import login_user, current_user, logout_user, login_required
 from string import ascii_letters
 from flask_socketio import SocketIO, join_room, leave_room, send
-
+from app import db
+from app.models import FriendRequest, User,Room
 from app import socketio,db
-from flask_login import login_required
+from sqlalchemy.orm import aliased
+from sqlalchemy import or_
+# from flask_login import login_required
 main = Blueprint('main',__name__)
 
+# rooms = Room.query.filter(
+#     or_(
+#         Room.member_1 == current_user.id,
+#         Room.member_2 == current_user.id
+#     )
+#     ).all()
 rooms = {}
-
 
 def generate_room_code(length: int, existing_codes: list[str]) -> str:
     while True:
@@ -17,49 +26,30 @@ def generate_room_code(length: int, existing_codes: list[str]) -> str:
         if code not in existing_codes:
             return code
 @main.route('/', methods=["GET", "POST"])
+@login_required
 def home():
-    session.clear()
-    if request.method == "POST":
-        name = request.form.get('name')
-        create = request.form.get('create', False)
-        code = request.form.get('code')
-        join = request.form.get('join', False)
-        if not name:
-            return render_template('home.html', error="Name is required", code=code)
-        if create != False:
-            room_code = generate_room_code(6, list(rooms.keys()))
-            new_room = {
-                'members': 0,
-                'messages': []
-            }
-            rooms[room_code] = new_room
-        if join != False:
-            # no code
-            if not code:
-                return render_template('home.html', error="Please enter a room code to enter a chat room", name=name)
-            # invalid code
-            if code not in rooms:
-                return render_template('home.html', error="Room code invalid", name=name)
-            room_code = code
-        session['room'] = room_code
-        session['name'] = name
-        return redirect(url_for('main.room'))
-    else:
-        return render_template('home.html')        
-    
+    return redirect(url_for('main.room'))
 
 @main.route('/room')
+@login_required
+
 def room():
-    room = session.get('room')
-    name = session.get('name')
-    if name is None or room is None or room not in rooms:
-        return redirect(url_for('main.home'))
-    messages = rooms[room]['messages']
-    return render_template('room.html', room=room, user=name, messages=messages)
+    chats = Room.query.filter(
+    or_(
+        Room.member_1 == current_user.id,
+        Room.member_2 == current_user.id
+    )
+    ).all()
+    name = current_user.username
+    messages=''
+  
+    print(chats)
+    return render_template('room.html', room=room, user=name, messages=messages,chats = chats)
 
 @socketio.on('connect')
+@login_required
 def handle_connect():
-    name = session.get('name')
+    name = current_user.username
     room = session.get('room')
     if name is None or room is None:
         return
@@ -70,7 +60,6 @@ def handle_connect():
         "sender": "",
         "message": f"{name} has entered the chat"
     }, to=room)
-    rooms[room]["members"] += 1
 
 @socketio.on('message')
 def handle_message(payload):

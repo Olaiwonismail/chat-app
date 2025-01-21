@@ -1,6 +1,6 @@
 {% extends 'base.html' %} {% block content %}
 <body class="bg-gray-100">
-  <h2 id="room-code-display">Room Code: <span>{{room}}</span></h2>
+  <h2 id="room-code-display">Room Code: <span>{{room}}</span>{{user}}</h2>
   <script type="text/javascript">
       var socketio = io.connect();
       socketio.on("message", 
@@ -54,18 +54,24 @@
           </div>
           <!-- Friend list -->
           <div class="flex-1 overflow-y-auto">
+            {% for chat in chats%}
               <div class="p-4 hover:bg-gray-100 cursor-pointer">
-                  <h3 class="font-semibold">John Doe</h3>
+                {% if current_user.id == chat.member_1 %}
+                  <h3 class="font-semibold">{{chat.member_2}} </h3>
+                {% else %}
+                <h3 class="font-semibold">{{chat.member_1}} </h3>
+                {% endif %} 
                   <p class="text-sm text-gray-500">Last message...</p>
               </div>
-              <div class="p-4 hover:bg-gray-100 cursor-pointer">
+              {% endfor %}  
+              <!-- <div class="p-4 hover:bg-gray-100 cursor-pointer">
                   <h3 class="font-semibold">Jane Smith</h3>
                   <p class="text-sm text-gray-500">Last message...</p>
               </div>
               <div class="p-4 hover:bg-gray-100 cursor-pointer">
                   <h3 class="font-semibold">Bob Johnson</h3>
                   <p class="text-sm text-gray-500">Last message...</p>
-              </div>
+              </div> -->
               <!-- Add more friend items here -->
           </div>
       </div>

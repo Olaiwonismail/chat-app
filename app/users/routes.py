@@ -2,7 +2,7 @@ from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flask_login import login_user, current_user, logout_user, login_required
 from app import db, bcrypt
 
-from app.models import User#, Post
+from app.models import User
 from app.users.forms import (RegistrationForm, LoginForm, UpdateAccountForm,
                                    RequestResetForm, ResetPasswordForm)
 from app.users.utils import save_pic #, send_reset_emai
@@ -16,13 +16,15 @@ def signup():
 
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(firstname=form.firstname.data,lastname=form.lastname.data,email=form.email.data,password=hashed_password,wishlist='')
+        user = User(username=form.username.data,email=form.email.data,password=hashed_password)
 
         db.session.add(user)
         db.session.commit()
-        flash(f'Welcome {form.firstname.data}',category='success')
-        return redirect(url_for('users.login'))
-    return render_template('users/signup.html', title = 'Register',form = form)
+        flash(f'Welcome {form.username.data}',category='success')
+        login_user(user)
+        return redirect(url_for('requests.profile',user_id=current_user.id))
+        # return redirect(url_for('users.login'))
+    return render_template('signup.html', title = 'Register',form = form)
 
 @users.route('/login',methods = ['POST','GET'])
 def login():
@@ -33,15 +35,18 @@ def login():
     if form.validate_on_submit():
         # print('nnnnnnnnnnnnn')
         user = User.query.filter_by(email = form.email.data).first()
-        if user and bcrypt.check_password_hash(user.password,form.password.data):
-            login_user(user,remember = form.remember.data)
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('main.home'))
+        if user:
+            if bcrypt.check_password_hash(user.password,form.password.data):
+                login_user(user,remember = form.remember.data)
+                next_page = request.args.get('next')
+                return redirect(next_page) if next_page else redirect(url_for('requests.profile',user_id=current_user.id))
+            else:
+                flash('Password Incorrect',category='danger')
         else:
-            flash('Login Unsuccessful',category='danger')
+            flash('User not found',category='danger')
 
     # print('dddddddddd')
-    return render_template('users/login.html', title = 'Login',form = form)
+    return render_template('login.html', title = 'Login',form = form)
 
 @users.route('/logout')
 def logout():

@@ -7,14 +7,13 @@ from app.models import User
 
 
 class RegistrationForm(FlaskForm):
-    firstname = StringField('First Name',
+    username = StringField('Username',
                                 validators = [DataRequired(),Length(min=2,max =20)])
-    lastname = StringField('Last Name',
-                                validators = [DataRequired(),Length(min=2,max =20)])
+    
     email = EmailField('Email',
                                 validators = [DataRequired()])
     password = PasswordField('Password' ,validators = [DataRequired()] )
-    # confirm_password = PasswordField('Confirm Password',validators = [DataRequired(),EqualTo('password')] )
+    confirm_password = PasswordField('Confirm Password',validators = [DataRequired(),EqualTo('password')] )
 
     submit = SubmitField('Sign Up')
 
@@ -34,7 +33,7 @@ class LoginForm(FlaskForm):
                                 validators = [DataRequired()])
     password = PasswordField('Password' ,validators = [DataRequired()] )
 
-    remember = BooleanField('Remember Me',default ='checked')
+    remember = BooleanField('Keep me logged in',default ='checked')
     submit = SubmitField('Login')
 
 
