@@ -1,5 +1,6 @@
 from flask import render_template, request, Blueprint,session,redirect,url_for
 import random
+from datetime import datetime
 from flask_login import login_user, current_user, logout_user, login_required
 from string import ascii_letters
 from flask_socketio import SocketIO, join_room, leave_room, send
@@ -33,6 +34,8 @@ def home():
 @main.route('/room')
 @login_required
 def room():
+    
+
     room_code = request.args.get('room_id')
     session['room_code'] = room_code
     chats = Room.query.filter(
@@ -42,14 +45,26 @@ def room():
         )
     ).all()
     name = current_user.username
-
+    
     # Get the current room by room_code (edit the logic as needed)
-    room = Room.query.filter_by(room_code=room_code).first()
+    room = ''
+    receiver_name = ''
+    if room_code:
+        room = Room.query.filter_by(room_code=room_code).first()
+        if current_user.id == room.member_1:
+            receiver_name=room.user_2.username
+        else: 
+            receiver_name=room.user_1.username
     
     # Get messages for this room (edit as needed)
-    messages = Message.query.filter_by(room_id=room_code).all()
-
-    return render_template('room.html', room=room, user=name, messages=messages, chats=chats)
+    old_messages = Message.query.filter_by(room_id=room_code).all()
+    today = datetime.now()
+    if room_code:
+        room_exists = True
+    else:
+        room_exists = False    
+       
+    return render_template('room.html',today=today, room=room, user=name, receiver_name= receiver_name, old_messages=old_messages, chats=chats,room_exists=room_exists)
 
 @socketio.on('connect')
 @login_required
@@ -59,7 +74,7 @@ def handle_connect():
     
     # if room not in rooms:
     #     leave_room(room)
-    join_room('d416b909-befa-434a-9aa8-86f6d67d9787')
+    join_room(session.get('room_code'))
     # send({
     #     "sender": "",
     #     "message": f"{name} has entered the chat"
@@ -69,26 +84,32 @@ def handle_connect():
 def handle_message(payload):
     print('hiii')
     name = current_user.username
-    room_code = 'd416b909-befa-434a-9aa8-86f6d67d9787'
+    room_code = session.get('room_code')
     room = Room.query.filter_by(room_code=room_code).first()
     # print(room_code)
+
     if current_user.id == room.member_1:
-        receiver_id=room.user_2.username
+        receiver_id=room.user_2.id
+        print(room.user_2.image)
     else: 
-        receiver_id=room.user_1.username
+        receiver_id=room.user_1.id
+        print(room.user_1.image)
     print(receiver_id)              
     # if room not in rooms:
     #     return
-    message = {
-        "sender": current_user.username,
-        "message": payload["message"]
-    }
     
-    messages.append(message)
     new_message = Message(sender_id =  current_user.id, receiver_id=receiver_id,message= payload["message"],room_id= room_code)
     db.session.add(new_message)  
-    print(new_message.receiver_id) 
+    print(new_message)
+    # print(new_message.receiver_id) 
     db.session.commit()
+    message = {
+        "sender": current_user.username,
+        "message": payload["message"],
+        "created_at": new_message.created_at.strftime('%H:%M')
+    }
+    print(message)
+    messages.append(message)
     send(message, to=room_code)
 
 

@@ -18,7 +18,10 @@ class User(db.Model, UserMixin):
     email = db.Column(db.Text, unique=True, nullable=False)
     password = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+    image = db.Column(db.Text,default='image.jfif')
+    bio = db.Column(db.Text)  # Optional user bio
+    dob = db.Column(db.Integer)  # New field for age
+    gender = db.Column(db.Text)
     def __repr__(self):
         return f"<User(username={self.username})>"
     

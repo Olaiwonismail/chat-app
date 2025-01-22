@@ -1,28 +1,171 @@
-{% extends 'base.html' %} {% block content %}
-{% for request in pending_requests %}
-    <div>
-        <p>{{ request.sender.username }} has sent you a friend request.</p>
-        <form action="{{ url_for('requests.accept_friend_request', request_id=request.id) }}" method="POST">
-            <button type="submit" class="btn btn-success">Accept</button>
-        </form>
-        <form action="{{ url_for('requests.reject_friend_request', request_id=request.id) }}" method="POST">
-            <button type="submit" class="btn btn-danger">Reject</button>
-        </form>
-    </div>
-{% endfor %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Chat App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body id="root" class="bg-gray-50 text-gray-900">
 
-{% with messages = get_flashed_messages(with_categories=true) %}
+<div class="min-h-screen flex items-center justify-center py-6">
+    <div class="w-full max-w-2xl bg-white shadow-lg rounded-xl p-8 space-y-6">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <div class="mb-4">
+                <div class="fixed top-4 right-4 z-50 space-y-2">
                     {% for category, message in messages %}
-                        <div class="text-white p-3 rounded-lg 
-                            {% if category == 'success' %} bg-green-500 
-                            {% elif category == 'danger' %} bg-red-500 
-                            {% else %} bg-yellow-500 {% endif %}">
+                        <div class="px-4 py-3 rounded-lg shadow-lg backdrop-blur-sm bg-white/90 border
+                            {% if category == 'success' %} border-green-500 text-green-700
+                            {% elif category == 'danger' %} border-red-500 text-red-700
+                            {% else %} border-yellow-500 text-yellow-700 {% endif %}">
                             {{ message }}
                         </div>
                     {% endfor %}
                 </div>
             {% endif %}
         {% endwith %}
-        {% endblock %}
+        
+        <div class="flex justify-between items-center">
+            <!-- Back to Chat Button -->
+            <a href="{{ url_for('main.room') }}" 
+               class="text-sm font-semibold px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-300">
+                Back to Chat
+            </a>
+
+            <!-- Edit Profile Button (show only if viewing own profile) -->
+            {% if current_user.id == user.id %}
+                <a href="{{ url_for('users.edit_profile') }}" 
+                   class="px-4 py-2 text-sm font-semibold border border-indigo-600 hover:border-indigo-700 rounded-md text-indigo-600 hover:text-indigo-700 transition duration-300">
+                    Edit Profile
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- Profile Header -->
+        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6">
+            <!-- Profile Image -->
+            {% if user.image %}
+                <img src="{{ url_for('static', filename='profile_pics/' + current_user.image) }}" alt="{{ user.username }}" class="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-indigo-500 shadow-md">
+            {% else %}
+                <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-indigo-500 text-3xl text-white flex items-center justify-center shadow-md">
+                    {{ user.username[:1].upper() }}
+                </div>
+            {% endif %}
+
+            <!-- User Info -->
+            <div class="text-center sm:text-left space-y-3 flex-1">
+                <h1 class="text-2xl font-bold">{{ user.username }}</h1>
+                <p class="text-sm text-gray-500">Joined {{ user.created_at.strftime('%B %Y') }}</p>
+                <div class="p-6  rounded-xl text-gray-600">
+                   
+                
+                {% if user.gender %}
+                    <p > <span class="font-bold"> Sex </span> {{ user.gender }}</p>
+                {% endif %}
+                {% if user.dob %}
+                    <p ><span class="font-bold"> Date of birth  </span> : {{ user.dob }}</p>
+                {% endif %}
+
+                {% if user.bio %}
+                <div class="py-4">
+
+                    <p class="font-bold">About me</p>
+                    <p class="">{{ user.bio }}</p>
+                </div>
+
+                {% endif %}
+            </div>
+                
+                <div class="space-x-2 flex justify-center sm:justify-start">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-600 text-sm">
+                        <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        {{ user.email }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Friend Requests Section -->
+        <h2 class="text-xl font-semibold">Friend Requests</h2>
+
+        {% if pending_requests %}
+            <div class="space-y-4">
+                {% for request in pending_requests %}
+                    <div class="p-4 bg-gray-50 rounded-xl border hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                {% if request.sender.image %}
+                                    <img src="{{ url_for('static', filename='profile_pics/' + request.sender.image ) }} alt="{{ request.sender.username }}" class="w-14 h-14 rounded-full">
+                                {% else %}
+                                    <div class="w-14 h-14 rounded-full bg-indigo-500 text-xl text-white flex items-center justify-center">
+                                        {{ request.sender.username[:1].upper() }}
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <p class="font-medium">{{ request.sender.username }}</p>
+                                    <p class="text-sm text-gray-600">Wants to connect with you</p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3">
+                                <form action="{{ url_for('requests.accept_friend_request', request_id=request.id) }}" method="POST">
+                                    <button type="submit" class="px-5 py-2 text-sm font-semibold bg-green-500 hover:bg-green-600 text-white rounded-md transition duration-300">
+                                        Accept
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('requests.reject_friend_request', request_id=request.id) }}" method="POST">
+                                    <button type="submit" class="px-5 py-2 text-sm font-semibold bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md transition duration-300">
+                                        Decline
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="p-6 bg-gray-100 rounded-xl text-center text-gray-600">
+                <p>Find users to chat with.</p>
+            </div>
+        {% endif %}
+        <h2 class="text-xl font-semibold mt-8">People you may be interested in </h2>
+
+        <div class="space-y-4">
+            {% for user in friends %}
+                <div class="p-4 bg-gray-50 rounded-xl border hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-300">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            {% if user.image %}
+                                <img src="{{ url_for('static', filename='profile_pics/' + user.image) }}" alt="{{ user.username }}" class="w-14 h-14 rounded-full">
+                            {% else %}
+                                <div class="w-14 h-14 rounded-full bg-indigo-500 text-xl text-white flex items-center justify-center">
+                                    {{ user.username[:1].upper() }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <p class="font-medium">{{ user.username }}</p>
+                                <p class="text-sm text-gray-600"></p>
+                            </div>
+                        </div>
+        
+                        <!-- Send Friend Request Button -->
+                        <form action="{{ url_for('requests.send_friend_request', receiver_id=user.id) }}" method="POST">
+                            <button type="submit" class="px-5 py-2 text-sm font-semibold bg-green-500 hover:bg-green-600 text-white rounded-md transition duration-300">
+                                Send Friend Request
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+
+</div>
+
+</body>
+</html>

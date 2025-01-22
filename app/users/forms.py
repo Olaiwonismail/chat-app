@@ -1,9 +1,10 @@
 from flask_wtf import csrf,FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField,EmailField
+from wtforms import StringField,TextAreaField, PasswordField, SubmitField, BooleanField,EmailField,DateField, SelectField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from flask_login import current_user
 from app.models import User
+
 
 
 class RegistrationForm(FlaskForm):
@@ -14,7 +15,20 @@ class RegistrationForm(FlaskForm):
                                 validators = [DataRequired()])
     password = PasswordField('Password' ,validators = [DataRequired()] )
     confirm_password = PasswordField('Confirm Password',validators = [DataRequired(),EqualTo('password')] )
-
+    date_of_birth = DateField(
+        "Enter your date of birth",
+        format="%Y-%m-%d",  # Accepts YYYY-MM-DD
+        validators=[DataRequired(message="Please enter your date of birth.")]
+    )
+    gender = SelectField(
+        "Select Your Gender",
+        choices=[
+            ("male", "Male"),
+            ("female", "Female"),
+            ("other", "Other"),
+        ],
+        validators=[DataRequired(message="Please select your gender.")],
+    )
     submit = SubmitField('Sign Up')
 
     def validate_username(self,username):
@@ -26,6 +40,17 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user:
             raise ValidationError('This email has been taken Please choose another')
+
+class BioForm(FlaskForm):
+    bio = TextAreaField(
+        "Enter Your Bio",
+        validators=[
+            DataRequired(message="Please write something about yourself."),
+            Length(max=200, message="Your bio must not exceed 200 characters.")
+        ],
+        render_kw={"rows": 5}  # Sets the height of the text area
+    )
+    submit = SubmitField("Submit")
 
 class LoginForm(FlaskForm):
 
@@ -39,29 +64,37 @@ class LoginForm(FlaskForm):
 
 
 
-class UpdateAccountForm(FlaskForm):
-    firstname = StringField('First Name',
-                                validators = [DataRequired(),Length(min=2,max =20)])
-    lastname = StringField('Last Name',
-                                validators = [DataRequired(),Length(min=2,max =20)])
-    email = EmailField('Email',
-                                validators = [DataRequired()])
-    picture = FileField('Update Profile Picture',validators = [FileAllowed(['jpg','png'])])
-    submit = SubmitField('Update')
+# class UpdateAccountForm(FlaskForm):
+#     firstname = StringField('First Name',
+#                                 validators = [DataRequired(),Length(min=2,max =20)])
+#     lastname = StringField('Last Name',
+#                                 validators = [DataRequired(),Length(min=2,max =20)])
+#     email = EmailField('Email',
+#                                 validators = [DataRequired()])
+#     picture = FileField('Update Profile Picture',validators = [FileAllowed(['jpg','png'])])
+#     bio = TextAreaField(
+#         "Enter Your Bio",
+#         validators=[
+#             DataRequired(message="Please write something about yourself."),
+#             Length(max=200, message="Your bio must not exceed 200 characters.")
+#         ],
+#         render_kw={"rows": 5}  # Sets the height of the text area
+#     )
+#     submit = SubmitField('Update')
 
-    def validate_username(self,username):
-        if username.data != current_user.username:
+#     def validate_username(self,username):
+#         if username.data != current_user.username:
 
-            user = User.query.filter_by(username=username.data).first()
-            if user:
-                raise ValidationError('This user name has been taken Please choose another')
+#             user = User.query.filter_by(username=username.data).first()
+#             if user:
+#                 raise ValidationError('This user name has been taken Please choose another')
 
 
-    def validate_email(self,email):
-        if email.data != current_user.email:
-            user = User.query.filter_by(email=email.data).first()
-            if user:
-                raise ValidationError('This email has been taken Please choose another')
+#     def validate_email(self,email):
+#         if email.data != current_user.email:
+#             user = User.query.filter_by(email=email.data).first()
+#             if user:
+#                 raise ValidationError('This email has been taken Please choose another')
 
 class RequestResetForm(FlaskForm):
     email = EmailField('Email',
@@ -76,3 +109,41 @@ class ResetPasswordForm(FlaskForm):
     password = PasswordField('Password' ,validators = [DataRequired()] )
     confirm_password = PasswordField('Confirm Password',validators = [DataRequired(),EqualTo('password')] )
     submit = SubmitField('Reset')
+
+
+
+
+class UpdateAccountForm(FlaskForm):
+    username = StringField(
+        'Username',
+        validators=[DataRequired(), Length(min=2, max=20)],
+    )
+    email = EmailField(
+        'Email',
+        validators=[DataRequired(), Email()],
+    )
+    picture = FileField(
+        'Update Profile Picture',
+        validators=[FileAllowed(['jpg', 'png','jfif'])],
+    )
+    bio = TextAreaField(
+        "Update your Bio",
+        validators=[
+            DataRequired(message="Please write something about yourself."),
+            Length(max=200, message="Your bio must not exceed 200 characters.")
+        ],
+        render_kw={"rows": 5}  # Sets the height of the text area
+    )
+    submit = SubmitField('Update')
+
+    def validate_username(self, username):
+        if username.data != current_user.username:  # Allow unchanged username
+            user = User.query.filter_by(username=username.data).first()
+            if user:
+                raise ValidationError('This username has been taken. Please choose another.')
+
+    def validate_email(self, email):
+        if email.data != current_user.email:  # Allow unchanged email
+            user = User.query.filter_by(email=email.data).first()
+            if user:
+                raise ValidationError('This email has been taken. Please choose another.')

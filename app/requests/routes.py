@@ -1,7 +1,8 @@
 from flask import render_template, redirect, url_for, flash, request
-from flask_login import current_user
+from flask_login import current_user, login_required
 import uuid
 from app import db
+
 from app.models import FriendRequest, User,Room
 from flask import render_template, request, Blueprint,session,redirect,url_for
 
@@ -13,7 +14,7 @@ def send_friend_request(receiver_id):
     
     if receiver.id == current_user.id:
         flash("You cannot send a friend request to yourself.", category='danger')
-        return redirect(url_for('requests.profile', user_id=current_user.id))
+        return redirect(url_for('users.profile', user_id=current_user.id))
     
     # Check if there's already a pending request
     existing_request = FriendRequest.query.filter(
@@ -23,7 +24,7 @@ def send_friend_request(receiver_id):
     
     if existing_request:
         flash("A friend request is already pending or has been responded to.", category='danger')
-        return redirect(url_for('requests.profile', user_id=current_user.id))
+        return redirect(url_for('users.profile', user_id=current_user.id))
     
     # Create the friend request
     new_request = FriendRequest(sender_id=current_user.id, receiver_id=receiver.id)
@@ -31,7 +32,7 @@ def send_friend_request(receiver_id):
     db.session.commit()
 
     flash(f"Friend request sent to {receiver.username}!", category='success')
-    return redirect(url_for('requests.profile', user_id=receiver.id))
+    return redirect(url_for('users.profile', user_id=receiver.id))
 
 @requests.route('/accept_friend_request/<int:request_id>', methods=['POST','GET'])
 def accept_friend_request(request_id):
@@ -40,7 +41,7 @@ def accept_friend_request(request_id):
     # Ensure that the current user is the receiver of the request
     if friend_request.receiver_id != current_user.id:
         flash("You cannot accept this request.", category='danger')
-        return redirect(url_for('requests.profile', user_id=current_user.id))
+        return redirect(url_for('users.profile', user_id=current_user.id))
 
     # Update the status to 'accepted'
     friend_request.status = 'accepted'
@@ -50,7 +51,7 @@ def accept_friend_request(request_id):
     db.session.commit()
 
     flash("Friend request accepted!", category='success')
-    return redirect(url_for('requests.profile', user_id=current_user.id))
+    return redirect(url_for('users.profile', user_id=current_user.id))
 
 @requests.route('/reject_friend_request/<int:request_id>', methods=['POST','GET'])
 def reject_friend_request(request_id):
@@ -59,23 +60,13 @@ def reject_friend_request(request_id):
     # Ensure that the current user is the receiver of the request
     if friend_request.receiver_id != current_user.id:
         flash("You cannot reject this request.", category='danger')
-        return redirect(url_for('requests.profile', user_id=current_user.id))
+        return redirect(url_for('users.profile', user_id=current_user.id))
 
     # Update the status to 'rejected'
     friend_request.status = 'rejected'
     db.session.commit()
 
     flash("Friend request rejected.", category='danger')
-    return redirect(url_for('requests.profile', user_id=current_user.id))
+    return redirect(url_for('users.profile', user_id=current_user.id))
 
-@requests.route('/profile/<int:user_id>')
-def profile(user_id):
-    user = User.query.get_or_404(user_id)
-    
-    # Fetch all pending friend requests where the current user is the receiver
-    pending_requests = FriendRequest.query.filter_by(receiver_id=current_user.id, status='pending').all()
 
-    # Fetch all accepted friends (for example purposes)
-    friends = []  # You can modify this to fetch actual friends if you have a separate relationship table
-
-    return render_template('profile.html', user=user, pending_requests=pending_requests, friends=friends)

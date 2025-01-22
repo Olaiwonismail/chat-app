@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+  <div class="container mx-auto my-12 p-6 bg-white rounded-lg shadow-md">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Edit Profile</h1>
+    <div class="flex flex-col lg:flex-row items-center lg:items-start lg:gap-10">
+      
+      <!-- Profile Picture Section -->
+      <div class="mb-6 lg:mb-0">
+        <img class="h-32 w-32 rounded-full object-cover border-2 border-gray-300 shadow-sm" 
+          src="{{ image_file }}" 
+          alt="Profile Picture">
+      </div>
+      
+      <!-- Form Section -->
+      <form method="POST" enctype="multipart/form-data" class="w-full max-w-lg">
+        {{ form.hidden_tag() }}
+
+        <!-- Username Field -->
+        <div class="mb-4">
+          <label for="username" class="block text-gray-700 font-medium mb-2">Username</label>
+          {{ form.username(class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder="Enter your username") }}
+          {% for error in form.username.errors %}
+          <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <!-- Email Field -->
+        <div class="mb-4">
+          <label for="email" class="block text-gray-700 font-medium mb-2">Email</label>
+          {{ form.email(class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder="Enter your email") }}
+          {% for error in form.email.errors %}
+          <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <!-- Bio Field -->
+        <div class="mb-4">
+          <label for="bio" class="block text-gray-700 font-medium mb-2">Bio</label>
+          {{ form.bio(class="w-full px-4 py-2 h-32 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500") }}
+          {% for error in form.bio.errors %}
+          <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        
+
+        <!-- Profile Picture Upload -->
+        <div class="mb-4">
+          <label for="picture" class="block text-gray-700 font-medium mb-2">Update Profile Picture</label>
+          {{ form.picture(class="block w-full text-gray-700 rounded-lg border border-gray-300") }}
+          {% for error in form.picture.errors %}
+          <p class="text-red-500 text-sm mt-1">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mb-4">
+          <button type="submit" 
+            class="w-full bg-blue-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-600 focus:ring-2 focus:ring-blue-300">
+            Update
+          </button>
+        </div>
+
+        <!-- Cancel Button -->
+        <div class="text-center">
+          <a href="{{ url_for('users.profile') }}" 
+            class="text-gray-600 hover:text-blue-500">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
