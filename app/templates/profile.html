@@ -86,8 +86,27 @@
                         {{ user.email }}
                     </span>
                 </div>
+                Share your profile link : {{url_for('users._profile',id = user.id)}}
+
+                <!-- Copy Button -->
+                <button id="copyButton" 
+                        class="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition duration-300"
+                        onclick="copyToClipboard()">
+                  Copy
+                </button>
             </div>
         </div>
+
+  <script>
+    function copyToClipboard() {
+      const text = "{{url_for('users._profile',id = user.id)}}";
+      navigator.clipboard.writeText(text).then(() => {
+        // alert("Text copied to clipboard!");
+      }).catch(err => {
+        console.error('Error copying text: ', err);
+      });
+    }
+  </script>
 
         <!-- Friend Requests Section -->
         <h2 class="text-xl font-semibold">Friend Requests</h2>
@@ -99,7 +118,7 @@
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-4">
                                 {% if request.sender.image %}
-                                    <img src="{{ url_for('static', filename='profile_pics/' + request.sender.image ) }} alt="{{ request.sender.username }}" class="w-14 h-14 rounded-full">
+                                    <img src="{{ url_for('static', filename='profile_pics/' + request.sender.image ) }}" alt="{{ request.sender.username }}" class="w-14 h-14 rounded-full">
                                 {% else %}
                                     <div class="w-14 h-14 rounded-full bg-indigo-500 text-xl text-white flex items-center justify-center">
                                         {{ request.sender.username[:1].upper() }}
