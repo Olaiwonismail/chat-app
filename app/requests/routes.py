@@ -9,6 +9,8 @@ from flask import render_template, request, Blueprint,session,redirect,url_for
 
 requests = Blueprint('requests',__name__)
 @requests.route('/send_friend_request/<int:receiver_id>', methods=['POST','GET'])
+
+@login_required
 def send_friend_request(receiver_id):
     receiver = User.query.get_or_404(receiver_id)
     
@@ -35,6 +37,8 @@ def send_friend_request(receiver_id):
     return redirect(url_for('users.profile', user_id=receiver.id))
 
 @requests.route('/accept_friend_request/<int:request_id>', methods=['POST','GET'])
+
+@login_required
 def accept_friend_request(request_id):
     friend_request = FriendRequest.query.get_or_404(request_id)
 
@@ -54,6 +58,7 @@ def accept_friend_request(request_id):
     return redirect(url_for('users.profile', user_id=current_user.id))
 
 @requests.route('/reject_friend_request/<int:request_id>', methods=['POST','GET'])
+@login_required
 def reject_friend_request(request_id):
     friend_request = FriendRequest.query.get_or_404(request_id)
 

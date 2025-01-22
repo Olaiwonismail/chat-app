@@ -27,9 +27,9 @@ def generate_room_code(length: int, existing_codes: list[str]) -> str:
         if code not in existing_codes:
             return code
 @main.route('/', methods=["GET", "POST"])
-@login_required
+
 def home():
-    return redirect(url_for('main.room'))
+    return render_template('landing.html')
 
 @main.route('/room')
 @login_required
