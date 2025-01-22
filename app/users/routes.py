@@ -135,7 +135,7 @@ def get_random_users(n=5, current_user_id=None):
 @users.route('/profile')
 @login_required
 def profile():
-    print(current_user.image)
+    # print(current_user.image)
     user_id = current_user.id
     user = User.query.get_or_404(user_id)
     
@@ -150,7 +150,56 @@ def profile():
     # return f'Random users: {", ".join(usernames)}'
     return render_template('profile.html', user=user, pending_requests=pending_requests, friends=friends)
 
+def get_friend_status(other_user_id):
+    """
+    Check the friendship/request status between current_user and another user.
+    Returns one of:
+    - 'self': If current_user is checking their own profile.
+    - 'friends': If the users are already friends.
+    - 'sent_request': If current_user has sent a friend request to the other user.
+    - 'received_request': If current_user has received a friend request from the other user.
+    - 'no_relation': If no friend relationship or request exists.
+    """
+    if current_user.id == other_user_id:
+        return 'self'
+    
+    # Check if the users are friends (an accepted friend request exists)
+    is_friend = Room.query.filter(
+        ((Room.member_1 == current_user.id) & (Room.member_2 == other_user_id)) |
+        ((Room.member_1 == other_user_id) & (Room.member_2 == current_user.id))
+    ).first()
+    if is_friend:
+        return 'friends'
 
+    # Check if current_user has sent a friend request
+    sent_request = FriendRequest.query.filter_by(
+        sender_id=current_user.id,
+        receiver_id=other_user_id,
+        status='pending'
+    ).first()
+    if sent_request:
+        return 'sent_request'
+
+    # Check if current_user has received a friend request
+    received_request = FriendRequest.query.filter_by(
+        sender_id=other_user_id,
+        receiver_id=current_user.id,
+        status='pending'
+    ).first()
+    if received_request:
+        return 'received_request'
+
+    return 'no_relation'
+
+
+@users.route('/_profile/<int:id>')
+@login_required
+def _profile(id):
+    info = get_friend_status(id)
+    if info == 'self':
+        return redirect(url_for('users.profile'))
+    user = User.query.get_or_404(id)
+    return render_template('_profile.html', user=user,info = info)
 
 # @users.route('/account',methods = ['POST','GET'])
 # @login_required

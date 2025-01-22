@@ -64,6 +64,7 @@ def reject_friend_request(request_id):
 
     # Update the status to 'rejected'
     friend_request.status = 'rejected'
+    db.session.delete(friend_request)
     db.session.commit()
 
     flash("Friend request rejected.", category='danger')

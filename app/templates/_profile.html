@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Chat App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body id="root" class="bg-gray-50 text-gray-900">
+
+<div class="min-h-screen flex items-center justify-center py-6">
+    <div class="w-full max-w-2xl bg-white shadow-lg rounded-xl p-8 space-y-6">
+
+        <!-- Profile Header -->
+        <div class="text-center space-y-6 mb-6">
+            <!-- Profile Image -->
+            <div>
+                {% if user.image %}
+                    <img src="{{ url_for('static', filename='profile_pics/' + user.image) }}" 
+                         alt="{{ user.username }}" 
+                         class="w-32 h-32 sm:w-40 sm:h-40 mx-auto rounded-full border-4 border-indigo-500 shadow-md">
+                {% else %}
+                    <div class="w-32 h-32 sm:w-40 sm:h-40 mx-auto rounded-full bg-indigo-500 text-3xl text-white flex items-center justify-center shadow-md">
+                        {{ user.username[:1].upper() }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- User Info -->
+            <div class="space-y-3">
+                <h1 class="text-2xl font-bold">{{ user.username }}</h1>
+                <p class="text-sm text-gray-500">Joined {{ user.created_at.strftime('%B %Y') }}</p>
+                <div class="p-6 rounded-xl text-gray-600">
+                    {% if user.gender %}
+                        <p><span class="font-bold">Sex:</span> {{ user.gender }}</p>
+                    {% endif %}
+                    {% if user.dob %}
+                        <p><span class="font-bold">Date of Birth:</span> {{ user.dob }}</p>
+                    {% endif %}
+                    {% if user.bio %}
+                        <div class="py-4">
+                            <p class="font-bold">About Me</p>
+                            <p>{{ user.bio }}</p>
+                        </div>
+                    {% endif %}
+
+                    {% if info == 'friends'%}
+                    <span 
+                        class="w-fullb bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        You are alredy friends with this user
+                        
+                    </span>
+                    {% elif info == 'sent_request'%}
+                    <span 
+                        class="w-fullb bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        You have alredy sent a request to this user
+                        
+                    </span>
+                    {% elif info == 'received_request'%}
+                    <a href="/accept_friend_request/{{user.id}}"
+                        class="w-fullb bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Accept friend request
+                        
+                    </a>
+                    {% elif info == 'no_relation'%}
+                    <a href="/send_friend_request/{{user.id}}"
+                        class="w-fullb bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Send friend request
+                        
+                    </a>
+
+                    {% endif %}
+                </div>
+                
+                <a href="/profile"
+                class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                Back to my Profile
+                
+            </a>
+                <!-- <div class="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-600 text-sm">
+                    <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    {{ user.email }}
+                </div> -->
+            </div>
+            
+        </div>
+
+        
+    </div>
+</div>
+
+</body>
+</html>
