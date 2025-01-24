@@ -226,7 +226,7 @@ def get_friend_status(other_user_id):
 @users.route('/_profile/<int:id>')
 
 def _profile(id):
-    if current_user:
+    if current_user.is_authenticated:
         info = get_friend_status(id)
     info = None
     user = User.query.get_or_404(id)
