@@ -2,9 +2,10 @@ import os
 # database_url
 
 db = os.getenv('database_url')
+sk = os.getenv('secret_key')
 class Config:
     SQLALCHEMY_DATABASE_URI = db
-    SECRET_KEY='b30bb8384e15acbc267f8cb0f1b94c84'
+    SECRET_KEY= sk
     MAIL_SERVER='smtp.gmail.com'
 
 
