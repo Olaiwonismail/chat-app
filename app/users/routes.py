@@ -224,7 +224,7 @@ def get_friend_status(other_user_id):
 
 
 @users.route('/_profile/<int:id>')
-@login_required
+
 def _profile(id):
     info = get_friend_status(id)
     if info == 'self':
