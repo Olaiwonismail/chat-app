@@ -20,7 +20,7 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     image = db.Column(db.Text,default='image.jfif')
     bio = db.Column(db.Text)  # Optional user bio
-    dob = db.Column(db.Integer)  # New field for age
+    dob = db.Column(db.Text)  # New field for age
     gender = db.Column(db.Text)
     def __repr__(self):
         return f"<User(username={self.username})>"

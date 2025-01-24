@@ -23,9 +23,13 @@ class RegistrationForm(FlaskForm):
     gender = SelectField(
         "Select Your Gender",
         choices=[
-            ("male", "Male"),
-            ("female", "Female"),
-            ("other", "Other"),
+            ("Male", "Male"),
+            ("Female", "Female"),
+            ("Nonbinary", "Nonbinary"),
+            ("Cisgender", "Cisgender"),
+            ("Transgender", "Transgender"),
+            
+            ("Prefer not to say", "Prefer not to say"),
         ],
         validators=[DataRequired(message="Please select your gender.")],
     )
