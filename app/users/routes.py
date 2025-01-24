@@ -226,9 +226,9 @@ def get_friend_status(other_user_id):
 @users.route('/_profile/<int:id>')
 
 def _profile(id):
-    info = get_friend_status(id)
-    if info == 'self':
-        return redirect(url_for('users.profile'))
+    if current_user:
+        info = get_friend_status(id)
+    info = None
     user = User.query.get_or_404(id)
     return render_template('_profile.html', user=user,info = info)
 
