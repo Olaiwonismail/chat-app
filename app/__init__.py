@@ -7,7 +7,7 @@ from flask_login import LoginManager
 from flask_bootstrap import Bootstrap4
 
 from app.config import Config
-
+from flask_cors import CORS
 
 
 
@@ -31,6 +31,7 @@ def create_app(config_class = Config):
     login_manager.init_app(app)
     bootstrap.init_app(app)
     app.app_context().push()
+    CORS(app, supports_credentials=True)
 
     from app.main.routes import main
     from app.users.routes import users
