@@ -91,64 +91,95 @@ def edit_profile():
     return render_template('edit_profile.html',title='Account',
                                         image_file = image_file,form = form)
 
+# def get_random_users(n=5, current_user_id=None):
+#     # Ensure `current_user_id` is passed or replace with current user's ID from session
+#     current_user_id = current_user_id or current_user.id
+    
+#     # Find users who are not the current user
+#     query = User.query.filter(User.id != current_user_id)  
+    
+#     # Exclude users who are part of the same room as current_user (i.e., avoid member_1 and member_2 in rooms the current user is in)
+#     # Assuming you have a `Room` model with `member_1` and `member_2`
+#     # Create an alias for the `Room` table to check memberships
+    
+    
+#     # Filter rooms where the current user is a member (either as member_1 or member_2)
+#     query = query.filter(~User.id.in_(
+#         db.session.query(Room.member_1)
+#         .filter(Room.member_1 != current_user_id)
+#         .union(
+#             db.session.query(Room.member_2)
+#             .filter(Room.member_2 != current_user_id)
+#         )
+#     ))
+    
+#     # Exclude users who already have pending friend requests from the current user
+#     query = query.filter(
+#         ~User.id.in_(
+#             db.session.query(FriendRequest.receiver_id)
+#             .filter(FriendRequest.sender_id == current_user_id, FriendRequest.status == 'pending')
+#         )
+#     ).filter(
+#         ~User.id.in_(
+#             db.session.query(FriendRequest.sender_id)
+#             .filter(FriendRequest.receiver_id == current_user_id, FriendRequest.status == 'pending')
+#         )
+#     )
+    
+#     # Retrieve random users (limit to `n`, with a fallback if less than `n` users are available)
+#     users = query.all()
+#     random_users = random.sample(users, min(n, len(users)))
+    
+#     return random_users
+
+from sqlalchemy.sql.expression import func
+
 def get_random_users(n=5, current_user_id=None):
-    # Ensure `current_user_id` is passed or replace with current user's ID from session
     current_user_id = current_user_id or current_user.id
-    
-    # Find users who are not the current user
-    query = User.query.filter(User.id != current_user_id)  
-    
-    # Exclude users who are part of the same room as current_user (i.e., avoid member_1 and member_2 in rooms the current user is in)
-    # Assuming you have a `Room` model with `member_1` and `member_2`
-    # Create an alias for the `Room` table to check memberships
-    
-    
-    # Filter rooms where the current user is a member (either as member_1 or member_2)
-    query = query.filter(~User.id.in_(
-        db.session.query(Room.member_1)
-        .filter(Room.member_1 != current_user_id)
-        .union(
-            db.session.query(Room.member_2)
-            .filter(Room.member_2 != current_user_id)
+
+    # Subquery: Users to exclude from rooms where the current user is a member
+    rooms_subquery = db.session.query(Room.member_1).filter(Room.member_2 == current_user_id).union(
+        db.session.query(Room.member_2).filter(Room.member_1 == current_user_id)
+    ).subquery()
+
+    # Subquery: Users to exclude due to pending friend requests
+    pending_requests_subquery = db.session.query(FriendRequest.receiver_id).filter(
+        FriendRequest.sender_id == current_user_id, FriendRequest.status == 'pending'
+    ).union(
+        db.session.query(FriendRequest.sender_id).filter(
+            FriendRequest.receiver_id == current_user_id, FriendRequest.status == 'pending'
         )
-    ))
-    
-    # Exclude users who already have pending friend requests from the current user
-    query = query.filter(
-        ~User.id.in_(
-            db.session.query(FriendRequest.receiver_id)
-            .filter(FriendRequest.sender_id == current_user_id, FriendRequest.status == 'pending')
-        )
-    ).filter(
-        ~User.id.in_(
-            db.session.query(FriendRequest.sender_id)
-            .filter(FriendRequest.receiver_id == current_user_id, FriendRequest.status == 'pending')
-        )
-    )
-    
-    # Retrieve random users (limit to `n`, with a fallback if less than `n` users are available)
-    users = query.all()
-    random_users = random.sample(users, min(n, len(users)))
-    
-    return random_users
+    ).subquery()
+
+    # Filter users and randomize selection on the database level
+    query = User.query.filter(
+        User.id != current_user_id,  # Exclude current user
+        ~User.id.in_(rooms_subquery),  # Exclude users in the same rooms
+        ~User.id.in_(pending_requests_subquery)  # Exclude users with pending requests
+    ).order_by(func.random()).limit(n)  # Randomize and limit results on the database
+
+    return query.all()
+
 
 @users.route('/profile')
 @login_required
 def profile():
-    # print(current_user.image)
     user_id = current_user.id
     user = User.query.get_or_404(user_id)
-    
-    # Fetch all pending friend requests where the current user is the receiver
-    pending_requests = FriendRequest.query.filter_by(receiver_id=current_user.id, status='pending').all()
-    print(user.image)
-    # Fetch all accepted friends (for example purposes)
-      # You can modify this to fetch actual friends if you have a separate relationship table
+
+    # Fetch pending friend requests for the current user
+    pending_requests = FriendRequest.query.filter_by(receiver_id=user_id, status='pending').all()
+
+    # Fetch random users (potential friends)
     random_users = get_random_users(5)
-    friends = [user for user in random_users]
-    print(friends)
-    # return f'Random users: {", ".join(usernames)}'
-    return render_template('profile.html', user=user, pending_requests=pending_requests, friends=friends)
+
+    # Render the profile page
+    return render_template(
+        'profile.html',
+        user=user,
+        pending_requests=pending_requests,
+        friends=random_users
+    )
 
 def get_friend_status(other_user_id):
     """
