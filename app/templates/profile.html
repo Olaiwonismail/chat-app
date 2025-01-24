@@ -86,26 +86,36 @@
                         {{ user.email }}
                     </span>
                 </div>
-                Share your profile link : {{url_for('users._profile',id = user.id)}}
+                Share your profile link : 
 
                 <!-- Copy Button -->
                 <button id="copyButton" 
                         class="text-sm bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition duration-300"
                         onclick="copyToClipboard()">
-                  Copy
+                  Share
                 </button>
             </div>
         </div>
 
   <script>
     function copyToClipboard() {
-      const text = "{{url_for('users._profile',id = user.id)}}";
-      navigator.clipboard.writeText(text).then(() => {
-        // alert("Text copied to clipboard!");
-      }).catch(err => {
-        console.error('Error copying text: ', err);
-      });
-    }
+      const ninjaUrl = "{{ url_for('profile', id=user_id) }}"; // Jinja variable
+            const fullUrl = `${window.location.origin}${ninjaUrl}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Check out this profile!',
+                    url: fullUrl,
+                })
+                .then(() => console.log('Shared successfully!'))
+                .catch((error) => console.error('Error sharing:', error));
+            } else {
+                console.log('Web Share API not supported. URL:', fullUrl);
+                navigator.clipboard.writeText(fullUrl)
+                    .then(() => alert('Link copied to clipboard!'))
+                    .catch((err) => console.error('Could not copy link:', err));
+            }
+        }
   </script>
 
         <!-- Friend Requests Section -->
