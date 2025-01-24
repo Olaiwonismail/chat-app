@@ -128,7 +128,7 @@ class UpdateAccountForm(FlaskForm):
     )
     picture = FileField(
         'Update Profile Picture',
-        validators=[FileAllowed(['jpg', 'png','jfif'])],
+        validators=[FileAllowed(['jpg', 'png','jfif','jpeg','webp','heic','svg'])],
     )
     bio = TextAreaField(
         "Update your Bio",
