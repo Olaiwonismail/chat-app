@@ -29,6 +29,8 @@ def generate_room_code(length: int, existing_codes: list[str]) -> str:
 @main.route('/', methods=["GET", "POST"])
 
 def home():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.room'))
     return render_template('landing.html')
 
 @main.route('/room')
