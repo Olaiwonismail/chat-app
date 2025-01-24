@@ -99,7 +99,7 @@
 
   <script>
     function copyToClipboard() {
-      const ninjaUrl = "{{ url_for('users._profile', id=user_id) }}"; // Jinja variable
+      const ninjaUrl = "{{ url_for('users._profile', id=current_user.id) }}"; // Jinja variable
             const fullUrl = `${window.location.origin}${ninjaUrl}`;
 
             if (navigator.share) {
