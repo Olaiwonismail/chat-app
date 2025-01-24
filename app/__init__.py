@@ -30,7 +30,7 @@ def create_app(config_class = Config):
     bcrypt.init_app(app)
     login_manager.init_app(app)
     bootstrap.init_app(app)
-    app.app_context().push()
+    #app.app_context().push()
     CORS(app, supports_credentials=True)
 
     from app.main.routes import main
