@@ -133,7 +133,7 @@ def edit_profile():
 #     return random_users
 
 from sqlalchemy.sql.expression import func
-
+from sqlalchemy import select
 def get_random_users(n=5, current_user_id=None):
     current_user_id = current_user_id or current_user.id
 
@@ -154,8 +154,11 @@ def get_random_users(n=5, current_user_id=None):
     # Filter users and randomize selection on the database level
     query = User.query.filter(
         User.id != current_user_id,  # Exclude current user
-        ~User.id.in_(rooms_subquery),  # Exclude users in the same rooms
-        ~User.id.in_(pending_requests_subquery)  # Exclude users with pending requests
+       
+
+~User.id.in_(select(rooms_subquery)),
+~User.id.in_(select(pending_requests_subquery))
+
     ).order_by(func.random()).limit(n)  # Randomize and limit results on the database
 
     return query.all()
