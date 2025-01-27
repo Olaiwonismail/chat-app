@@ -6,8 +6,10 @@
       var messagesContainer = document.getElementById("messages");
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
-
+    if (room_exists) {
     var socketio = io.connect();
+      
+    }
     socketio.on("message", function (message) {
       createChatItem(message.message, message.sender, message.created_at) 
     });

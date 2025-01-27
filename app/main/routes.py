@@ -66,8 +66,12 @@ def room():
     else:
         room_exists = False    
        
-    return render_template('room.html',today=today, room=room, user=name, receiver_name= receiver_name, old_messages=old_messages, chats=chats,room_exists=room_exists)
-
+    return render_template('room.html',today=today, room=room,
+                            user=name,
+                            receiver_name= receiver_name,
+                            old_messages=old_messages, 
+                            chats=chats,
+                            room_exists=room_exists)
 @socketio.on('connect')
 @login_required
 def handle_connect():
