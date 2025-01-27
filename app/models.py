@@ -65,7 +65,7 @@ class FriendRequest(db.Model):
     
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    room_code =  db.Column(db.Integer, nullable=False)
+    room_code =  db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     member_1 = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     member_2 = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
