@@ -73,10 +73,12 @@ def room():
 def handle_connect():
     name = current_user.username
     room = request.args.get('room_id')
+    if room:
+        join_room(session.get('room_code'))
     
     # if room not in rooms:
     #     leave_room(room)
-    join_room(session.get('room_code'))
+   
     # send({
     #     "sender": "",
     #     "message": f"{name} has entered the chat"
@@ -89,14 +91,14 @@ def handle_message(payload):
     room_code = session.get('room_code')
     room = Room.query.filter_by(room_code=room_code).first()
     # print(room_code)
-
-    if current_user.id == room.member_1:
-        receiver_id=room.user_2.id
-        print(room.user_2.image)
-    else: 
-        receiver_id=room.user_1.id
-        print(room.user_1.image)
-    print(receiver_id)              
+    if room:
+        if current_user.id == room.member_1:
+            receiver_id=room.user_2.id
+            print(room.user_2.image)
+        else: 
+            receiver_id=room.user_1.id
+            print(room.user_1.image)
+        print(receiver_id)              
     # if room not in rooms:
     #     return
     
