@@ -72,7 +72,7 @@ def room():
 @login_required
 def handle_connect():
     name = current_user.username
-    room = request.args.get('room_id')
+    
     if room:
         join_room(session.get('room_code'))
     

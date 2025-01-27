@@ -223,9 +223,9 @@ def get_friend_status(other_user_id):
     return 'no_relation'
 
 
-@users.route('/my_profile/<int:id>')
+@users.route('/view_profile/<int:id>')
 
-def my_profile(id):
+def view_profile(id):
     if current_user.is_authenticated:
         info = get_friend_status(id)
     info = None
