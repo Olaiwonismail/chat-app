@@ -8,7 +8,7 @@ from flask import url_for, current_app
 import cloudinary
 import cloudinary.uploader
 from cloudinary.utils import cloudinary_url
-api_secret = os.getenv('secret_key')
+api_secret = os.getenv('cloudinary')
 # Configuration       
 cloudinary.config( 
     cloud_name = "dyb2ffz6x", 
