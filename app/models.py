@@ -34,10 +34,11 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
     receiver_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
-    message = db.Column(db.Text, nullable=False)
+    message = db.Column(db.Text, nullable=False,)
     is_read = db.Column(db.Boolean, default=False)  # Boolean for read status
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+    # with_image = db.Column(db.Boolean, default=False)
+    # image_data = db.Column(db.LargeBinary, nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)  # Add room_id to reference Room
     room = db.relationship('Room', back_populates='messages')  # Create a relationship with Room
 

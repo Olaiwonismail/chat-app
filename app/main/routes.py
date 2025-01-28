@@ -114,7 +114,9 @@ def handle_message(payload):
     message = {
         "sender": current_user.username,
         "message": payload["message"],
-        "created_at": new_message.created_at.strftime('%H:%M')
+        "created_at": new_message.created_at.strftime('%H:%M'),
+        # "with_image":new_message.is_image,
+
     }
     print(message)
     messages.append(message)
