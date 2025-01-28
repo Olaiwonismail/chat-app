@@ -19,7 +19,7 @@ def signup():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         dob = form.date_of_birth.data
         formatted_dob = dob.strftime('%B %d, %Y')
-        user = User(username=form.username.data,email=form.email.data,password=hashed_password,dob = formatted_dob,gender=form.gender.data)
+        user = User(username=form.username.data,email=form.email.data,password=hashed_password,dob = formatted_dob,gender=form.gender.data,image = 'https://res.cloudinary.com/dyb2ffz6x/image/upload/v1738102214/profile_pic.jpg' )
 
         db.session.add(user)
         db.session.commit()
