@@ -122,7 +122,7 @@
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-4">
                                 {% if request.sender.image %}
-                                    <img src="{{ url_for('static', filename='profile_pics/' + request.sender.image ) }}" alt="{{ request.sender.username }}" class="w-14 h-14 rounded-full">
+                                    <img src="{{ request.sender.image  }}" alt="{{ request.sender.username }}" class="w-14 h-14 rounded-full">
                                 {% else %}
                                     <div class="w-14 h-14 rounded-full bg-indigo-500 text-xl text-white flex items-center justify-center">
                                         {{ request.sender.username[:1].upper() }}
@@ -163,7 +163,7 @@
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             {% if user.image %}
-                                <img src="{{ url_for('static', filename='profile_pics/' + user.image) }}" alt="{{ user.username }}" class="w-14 h-14 rounded-full">
+                                <img src="{{  user.image }}" alt="{{ user.username }}" class="w-14 h-14 rounded-full">
                             {% else %}
                                 <div class="w-14 h-14 rounded-full bg-indigo-500 text-xl text-white flex items-center justify-center">
                                     {{ user.username[:1].upper() }}

@@ -82,10 +82,10 @@
                class="block hover:bg-gray-50 transition duration-150">
                 <div class="flex items-center p-4 border-b border-gray-100 space-x-3">
                     {% if current_user.id == chat.member_1 %}
-                    <img src="{{ url_for('static', filename='profile_pics/' + chat.user_2.image ) }}" alt="{{ chat.user_2.username }}" class="w-10 h-10 rounded-full object-cover">
+                    <img src="{{  chat.user_2.image  }}" alt="{{ chat.user_2.username }}" class="w-10 h-10 rounded-full object-cover">
                     <h3 class="font-semibold text-gray-900">{{chat.user_2.username}}</h3>
                     {% else %}
-                    <img src="{{ url_for('static', filename='profile_pics/' + chat.user_1.image ) }}" alt="{{ chat.user_1.username }}" class="w-10 h-10 rounded-full object-cover">
+                    <img src="{{  chat.user_1.image  }}" alt="{{ chat.user_1.username }}" class="w-10 h-10 rounded-full object-cover">
                     <h3 class="font-semibold text-gray-900">{{chat.user_1.username}}</h3>
                     {% endif %}
                 </div>
@@ -96,7 +96,7 @@
         <!-- User profile section -->
         <div class="flex-shrink-0 border-t border-gray-200">
             <div class="p-4 flex items-center space-x-3">
-                <img src="{{ url_for('static', filename='profile_pics/' + current_user.image) }}" alt="" class="w-10 h-10 rounded-full object-cover">
+                <img src="{{  current_user.image }}" alt="" class="w-10 h-10 rounded-full object-cover">
                 <div class="flex-1">
                     <a href="/profile" class="font-medium text-gray-900">{{user}}</a>
                     <div class="flex items-center space-x-2">

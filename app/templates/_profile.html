@@ -16,7 +16,7 @@
             <!-- Profile Image -->
             <div>
                 {% if user.image %}
-                    <img src="{{ url_for('static', filename='profile_pics/' + user.image) }}" 
+                    <img src="{{user.image}}" 
                          alt="{{ user.username }}" 
                          class="w-32 h-32 sm:w-40 sm:h-40 mx-auto rounded-full border-4 border-indigo-500 shadow-md">
                 {% else %}
