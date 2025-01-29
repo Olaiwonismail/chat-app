@@ -231,6 +231,7 @@ def get_friend_status(other_user_id):
 def view_profile(id):
     if current_user.is_authenticated:
         info = get_friend_status(id)
+        return redirect(url_for('users.profile'))
     info = None
     user = User.query.get_or_404(id)
     return render_template('_profile.html', user=user,info = info)
