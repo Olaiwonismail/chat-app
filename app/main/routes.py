@@ -59,7 +59,7 @@ def room():
             receiver_name=room.user_1.username
     
     # Get messages for this room (edit as needed)
-    old_messages = Message.query.filter_by(room_id=room_code).all()
+    old_messages = Message.query.filter_by(room_id=room.id).all()
     today = datetime.now()
     if room_code:
         room_exists = True
