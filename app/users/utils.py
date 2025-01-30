@@ -27,7 +27,7 @@ def save_pic(form_picture):
     _,f_ext = os.path.splitext(form_picture.filename)
     picture_filename = random_hex + f_ext
     upload_result = cloudinary.uploader.upload(form_picture,
-                                           public_id="profile_pic")
+                                           public_id=picture_filename)
     picture_path = os.path.join(current_app.root_path,'static/profile_pics',picture_filename)
     form_picture.save(picture_path)
     # return picture_filename
