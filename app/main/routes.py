@@ -51,6 +51,7 @@ def room():
     # Get the current room by room_code (edit the logic as needed)
     room = ''
     receiver_name = ''
+    old_messages=[]
     if room_code:
         room = Room.query.filter_by(room_code=room_code).first()
         if current_user.id == room.member_1:
@@ -59,13 +60,14 @@ def room():
             receiver_name=room.user_1.username
     
     # Get messages for this room (edit as needed)
-    old_messages = Message.query.filter_by(room_id=room.id).all()
+        old_messages = Message.query.filter_by(room_id=room.id).all()
+        print(old_messages)
     today = datetime.now()
     if room_code:
-        room_exists = True
+        room_exists = 'True'
     else:
-        room_exists = False    
-       
+        room_exists = 'False'    
+    # print(old_messages)   
     return render_template('room.html',today=today, room=room,
                             user=name,
                             receiver_name= receiver_name,
@@ -106,9 +108,9 @@ def handle_message(payload):
     # if room not in rooms:
     #     return
     
-    new_message = Message(sender_id =  current_user.id, receiver_id=receiver_id,message= payload["message"],room_id= room_code)
+    new_message = Message(sender_id =  current_user.id, receiver_id=receiver_id,message= payload["message"],room_id= room.id)
     db.session.add(new_message)  
-    print(new_message)
+    print(new_message.room_id)
     # print(new_message.receiver_id) 
     db.session.commit()
     message = {
@@ -118,7 +120,7 @@ def handle_message(payload):
         # "with_image":new_message.is_image,
 
     }
-    print(message)
+    
     messages.append(message)
     send(message, to=room_code)
 
