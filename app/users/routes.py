@@ -229,12 +229,14 @@ def get_friend_status(other_user_id):
 @users.route('/view_profile/<int:id>')
 
 def view_profile(id):
+    info = ''
     if current_user.is_authenticated:
         info = get_friend_status(id)
         if info == 'self':
             return redirect(url_for('users.profile'))
-    info = None
+    
     user = User.query.get_or_404(id)
+    print(info)
     return render_template('_profile.html', user=user,info = info)
 
 # @users.route('/account',methods = ['POST','GET'])

@@ -4,9 +4,9 @@ import os
 db = os.getenv('database_url')
 sk = os.getenv('secret_key')
 class Config:
-    SQLALCHEMY_DATABASE_URI = db
+    # SQLALCHEMY_DATABASE_URI = db
 
-    #SQLALCHEMY_DATABASE_URI = 'sqlite:///sql.db'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///sql.db'
     SECRET_KEY= sk
     MAIL_SERVER='smtp.gmail.com'
 
