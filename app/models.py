@@ -18,7 +18,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.Text, unique=True, nullable=False)
     password = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    image = db.Column(db.Text,default='https://res.cloudinary.com/dyb2ffz6x/image/upload/v1738102214/profile_pic.jpg')
+    image = db.Column(db.Text,default='https://res.cloudinary.com/dyb2ffz6x/image/upload/v1738976487/OIP_gfnybz.jpg')
     bio = db.Column(db.Text)  # Optional user bio
     dob = db.Column(db.Text)  # New field for age
     gender = db.Column(db.Text)

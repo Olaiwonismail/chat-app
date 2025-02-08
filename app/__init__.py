@@ -1,5 +1,6 @@
 
 from flask import Flask
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO
 from flask_bcrypt import Bcrypt
@@ -32,6 +33,7 @@ def create_app(config_class = Config):
     bootstrap.init_app(app)
     #app.app_context().push()
     CORS(app, supports_credentials=True)
+    Migrate(app, db)
 
     from app.main.routes import main
     from app.users.routes import users
