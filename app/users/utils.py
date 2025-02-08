@@ -31,6 +31,7 @@ def save_pic(form_picture):
     picture_path = os.path.join(current_app.root_path,'static/profile_pics',picture_filename)
     form_picture.save(picture_path)
     # return picture_filename
+    print(upload_result["secure_url"])
     return upload_result["secure_url"]
 
 # def send_reset_email(user):
