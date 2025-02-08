@@ -56,3 +56,4 @@ wsproto==1.2.0
 WTForms==3.2.1
 zope.event==5.0
 zope.interface==7.2
+gunicorn
